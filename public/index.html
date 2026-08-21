@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AURA Dashboard</title>
+  <style>
+    :root {
+      --bg: #090d1a;
+      --panel: rgba(21, 28, 51, 0.88);
+      --panel-soft: #18213a;
+      --border: rgba(180, 197, 255, 0.13);
+      --text: #f3f6ff;
+      --muted: #9ba8c7;
+      --purple: #8b5cf6;
+      --pink: #ec4899;
+      --cyan: #22d3ee;
+      --green: #34d399;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at 5% 0%, #27205d 0, transparent 30%),
+        radial-gradient(circle at 100% 100%, #0e4b5c 0, transparent 28%),
+        var(--bg);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      padding: 28px 18px;
+      border-right: 1px solid var(--border);
+      background: rgba(7, 10, 22, 0.68);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin: 0 10px 42px;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .logo {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      box-shadow: 0 10px 30px rgba(139, 92, 246, 0.35);
+    }
+
+    .nav-label {
+      margin: 24px 12px 9px;
+      color: #6f7c9e;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 1.2px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 5px 0;
+      padding: 12px;
+      color: var(--muted);
+      border-radius: 11px;
+      text-decoration: none;
+      transition: 0.2s;
+    }
+
+    .nav-item:hover, .nav-item.active {
+      color: white;
+      background: rgba(139, 92, 246, 0.2);
+    }
+
+    .nav-item.active { box-shadow: inset 3px 0 var(--purple); }
+
+    .profile {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin: 48px 8px 0;
+      padding: 14px 0 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .avatar {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #22d3ee, #8b5cf6);
+      font-weight: bold;
+    }
+
+    .profile small { color: var(--muted); }
+
+    .main { padding: 30px; }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    h1 { margin: 0; font-size: clamp(27px, 4vw, 38px); }
+    .date { color: var(--muted); }
+
+    .status {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 14px;
+      color: #a7f3d0;
+      border: 1px solid rgba(52, 211, 153, 0.22);
+      border-radius: 999px;
+      background: rgba(52, 211, 153, 0.1);
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 13px var(--green);
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(310px, 0.9fr);
+      gap: 22px;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--panel);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.17);
+    }
+
+    .hero {
+      padding: 28px;
+      background:
+        radial-gradient(circle at 90% 0%, rgba(236, 72, 153, 0.22), transparent 28%),
+        linear-gradient(120deg, rgba(139, 92, 246, 0.22), rgba(16, 22, 44, 0.8));
+    }
+
+    .hero h2 { margin: 0 0 10px; font-size: 27px; }
+    .hero p { max-width: 570px; margin: 0; color: var(--muted); line-height: 1.6; }
+
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .quick-actions button, .send-button {
+      border: 0;
+      cursor: pointer;
+      color: white;
+      font: inherit;
+      font-weight: bold;
+      transition: transform 0.18s, opacity 0.18s;
+    }
+
+    .quick-actions button {
+      padding: 10px 13px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .quick-actions button:hover, .send-button:hover { transform: translateY(-2px); }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 26px 2px 13px;
+    }
+
+    .section-title h3 { margin: 0; font-size: 17px; }
+    .section-title span { color: var(--muted); font-size: 13px; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .stat {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--panel-soft);
+    }
+
+    .stat .value { font-size: 25px; font-weight: 800; }
+    .stat .label { margin-top: 5px; color: var(--muted); font-size: 13px; }
+
+    .subjects {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .subject {
+      min-height: 135px;
+      padding: 17px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--panel-soft);
+    }
+
+    .subject .icon { font-size: 24px; }
+    .subject h4 { margin: 15px 0 5px; }
+    .subject p { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .chat-panel {
+      display: flex;
+      flex-direction: column;
+      min-height: 610px;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .assistant-orb {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+    }
+
+    .chat-header h3 { margin: 0; }
+    .chat-header p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+
+    .messages {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      gap: 14px;
+      padding: 18px;
+      overflow-y: auto;
+    }
+
+    .message {
+      max-width: 88%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      font-size: 14px;
+    }
+
+    .message.assistant {
+      align-self: flex-start;
+      background: #202b48;
+      border-bottom-left-radius: 4px;
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #7c3aed, #db2777);
+      border-bottom-right-radius: 4px;
+    }
+
+    .chat-form {
+      display: flex;
+      gap: 10px;
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .chat-form input {
+      min-width: 0;
+      flex: 1;
+      padding: 13px;
+      color: white;
+      outline: none;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #10182d;
+      font: inherit;
+    }
+
+    .chat-form input:focus { border-color: var(--purple); }
+
+    .send-button {
+      padding: 0 16px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+    }
+
+    .send-button:disabled { cursor: wait; opacity: 0.65; }
+
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .main { padding: 18px; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .chat-panel { min-height: 500px; }
+    }
+
+    @media (max-width: 530px) {
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .stats, .subjects { grid-template-columns: 1fr; }
+    }
+    /* Premium 3D visual layer */
+    body {
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      z-index: -1;
+      width: 430px;
+      height: 430px;
+      border-radius: 50%;
+      filter: blur(30px);
+      opacity: 0.38;
+      pointer-events: none;
+    }
+
+    body::before {
+      top: -170px;
+      right: -100px;
+      background: radial-gradient(circle, #a855f7, transparent 68%);
+      animation: driftOne 12s ease-in-out infinite alternate;
+    }
+
+    body::after {
+      bottom: -210px;
+      left: 14%;
+      background: radial-gradient(circle, #06b6d4, transparent 68%);
+      animation: driftTwo 15s ease-in-out infinite alternate;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+    }
+
+    .sidebar {
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+    }
+
+    .panel, .stat, .subject {
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      will-change: transform;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    }
+
+    .panel::before, .stat::before, .subject::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(
+        125deg,
+        rgba(255, 255, 255, 0.16),
+        transparent 26%,
+        transparent 68%,
+        rgba(34, 211, 238, 0.1)
+      );
+      pointer-events: none;
+    }
+
+    .panel:hover, .stat:hover, .subject:hover {
+      border-color: rgba(167, 139, 250, 0.62);
+      box-shadow: 0 24px 65px rgba(0, 0, 0, 0.34),
+                  0 0 35px rgba(139, 92, 246, 0.16);
+    }
+
+    .hero {
+      animation: floatPanel 6s ease-in-out infinite;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      top: -90px;
+      right: -60px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: conic-gradient(from 180deg, #22d3ee, #8b5cf6, #ec4899, #22d3ee);
+      filter: blur(20px);
+      opacity: 0.26;
+      animation: spinGlow 13s linear infinite;
+      pointer-events: none;
+    }
+
+    .logo, .assistant-orb {
+      animation: pulseGlow 3s ease-in-out infinite;
+      transform: translateZ(28px);
+    }
+
+    .nav-item {
+      transition: 0.22s ease;
+    }
+
+    .nav-item:hover {
+      transform: translateX(7px);
+      box-shadow: 0 7px 22px rgba(139, 92, 246, 0.16);
+    }
+
+    .quick-actions button {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quick-actions button::after,
+    .send-button::after {
+      content: "";
+      position: absolute;
+      top: -80%;
+      left: -30%;
+      width: 35%;
+      height: 270%;
+      background: rgba(255, 255, 255, 0.34);
+      transform: rotate(24deg);
+      transition: left 0.55s ease;
+    }
+
+    .quick-actions button:hover::after,
+    .send-button:hover::after {
+      left: 125%;
+    }
+
+    .send-button {
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 24px rgba(139, 92, 246, 0.35);
+    }
+
+    .status {
+      animation: statusBreathe 2.4s ease-in-out infinite;
+    }
+
+    @keyframes driftOne {
+      to { transform: translate(-100px, 85px) scale(1.18); }
+    }
+
+    @keyframes driftTwo {
+      to { transform: translate(120px, -75px) scale(1.22); }
+    }
+
+    @keyframes floatPanel {
+      0%, 100% { transform: translateY(0) rotateX(0); }
+      50% { transform: translateY(-7px) rotateX(0.5deg); }
+    }
+
+    @keyframes spinGlow {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 16px rgba(34, 211, 238, 0.3); }
+      50% { box-shadow: 0 0 30px rgba(236, 72, 153, 0.62); }
+    }
+
+    @keyframes statusBreathe {
+      50% { transform: scale(1.035); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand"><div class="logo">A</div>AURA</div>
+
+      <p class="nav-label">WORKSPACE</p>
+      <a class="nav-item active" href="#">▦ Dashboard</a>
+      <a class="nav-item" href="#chat">✦ Ask AURA</a>
+      <a class="nav-item" href="#subjects">◉ Subjects</a>
+
+      <p class="nav-label">LEARNING</p>
+      <a class="nav-item" href="#">◷ Study plan</a>
+      <a class="nav-item" href="#">✓ Progress</a>
+
+      <div class="profile">
+        <div class="avatar">P</div>
+        <div><strong>Parth</strong><br><small>Revision mode</small></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Unified Revision Assistant</p>
+          <h1>Good to see you, Parth.</h1>
+        </div>
+        <div class="status"><span class="dot"></span> Local AI online</div>
+      </header>
+
+      <div class="dashboard-grid">
+        <section>
+          <div class="panel hero">
+            <h2>Make today’s revision count.</h2>
+            <p>Ask a question, simplify a topic, create practice questions, or get a quick study plan. AURA runs privately on your computer.</p>
+            <div class="quick-actions">
+              <button onclick="askQuick('Explain photosynthesis simply.')">Explain a topic</button>
+              <button onclick="askQuick('Create 5 quiz questions about light.')">Create a quiz</button>
+              <button onclick="askQuick('Make a 30-minute revision plan for today.')">Plan my study</button>
+            </div>
+          </div>
+
+          <div class="section-title">
+            <h3>Your learning snapshot</h3>
+            <span>This week</span>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="value">0</div><div class="label">Questions asked</div></div>
+            <div class="stat"><div class="value">0 min</div><div class="label">Study time</div></div>
+            <div class="stat"><div class="value">Ready</div><div class="label">Local AI status</div></div>
+          </div>
+
+          <div class="section-title" id="subjects">
+            <h3>Subjects</h3>
+            <span>Choose a focus</span>
+          </div>
+          <div class="subjects">
+            <div class="subject"><div class="icon">⚛</div><h4>Physics</h4><p>Light, motion, energy</p></div>
+            <div class="subject"><div class="icon">🧬</div><h4>Biology</h4><p>Cells, systems, life</p></div>
+            <div class="subject"><div class="icon">∑</div><h4>Mathematics</h4><p>Practice and solve</p></div>
+          </div>
+        </section>
+
+        <section class="panel chat-panel" id="chat">
+          <div class="chat-header">
+            <div class="assistant-orb">✦</div>
+            <div><h3>Ask AURA</h3><p>Powered by your private local AI</p></div>
+          </div>
+
+          <div class="messages" id="messages">
+            <div class="message assistant">Hi Parth! What would you like to revise today?</div>
+          </div>
+
+          <form class="chat-form" id="chatForm">
+            <input id="question" type="text" placeholder="Ask anything about your studies..." autocomplete="off">
+            <button class="send-button" id="sendButton" type="submit">Send</button>
+          </form>
+        </section>
+      </div>
+    </main>
+  </div>
+    // Cursor-driven 3D tilt for dashboard cards
+    document.querySelectorAll(".panel, .stat, .subject").forEach((card) => {
+      card.addEventListener("mousemove", (event) => {
+        const rect = card.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width;
+        const y = (event.clientY - rect.top) / rect.height;
+        const rotateY = (x - 0.5) * 10;
+        const rotateX = (0.5 - y) * 10;
+
+        card.style.transform =
+          `perspective(850px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-5px)`;
+      });
+
+      card.addEventListener("mouseleave", () => {
+        card.style.transform = "";
+      });
+    });
+  <script>
+    const form = document.getElementById("chatForm");
+    const input = document.getElementById("question");
+    const messages = document.getElementById("messages");
+    const sendButton = document.getElementById("sendButton");
+
+    function addMessage(text, type) {
+      const message = document.createElement("div");
+      message.className = `message ${type}`;
+      message.textContent = text;
+      messages.appendChild(message);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    async function sendQuestion(question) {
+      const text = question.trim();
+      if (!text) return;
+
+      addMessage(text, "user");
+      input.value = "";
+      sendButton.disabled = true;
+      sendButton.textContent = "Thinking...";
+
+      try {
+        const response = await fetch("/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: text })
+        });
+
+        const data = await response.json();
+        addMessage(data.answer || data.error || "AURA could not answer that.", "assistant");
+      } catch (error) {
+        addMessage("I could not connect to the local AI. Please make sure AURA is running.", "assistant");
+      } finally {
+        sendButton.disabled = false;
+        sendButton.textContent = "Send";
+        input.focus();
+      }
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      sendQuestion(input.value);
+    });
+
+    function askQuick(question) {
+      input.value = question;
+      document.getElementById("chat").scrollIntoView({ behavior: "smooth" });
+      setTimeout(() => sendQuestion(question), 300);
+    }
+  </script>
+</body>
+</html>
