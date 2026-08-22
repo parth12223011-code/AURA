@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const path = require("path");
 
@@ -5,27 +7,36 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "auth.html"));
+});
+
+app.get("/dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
+
+app.use(express.static(path.join(__dirname, "public")));
 
 app.post("/ask", async (req, res) => {
   try {
     const question = req.body.question?.trim();
 
     if (!question) {
-      return res.status(400).json({ error: "Please provide a question." });
+      return res.status(400).json({
+        error: "Please provide a question.",
+      });
     }
 
     const ollamaResponse = await fetch(
       "http://127.0.0.1:11434/api/generate",
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
-          model: "llama3.2:1b",
+          model: "llama3.2",
           prompt: question,
           stream: false,
         }),
@@ -37,11 +48,15 @@ app.post("/ask", async (req, res) => {
     }
 
     const data = await ollamaResponse.json();
-    res.json({ answer: data.response });
+
+    res.json({
+      answer: data.response,
+    });
   } catch (error) {
-    console.error(error);
+    console.error("AURA AI error:", error);
+
     res.status(500).json({
-      error: "AURA could not get a response from the local AI.",
+      error: "AURA could not get a response from Ollama.",
     });
   }
 });
