@@ -764,7 +764,7 @@ checkAuth();
       sendButton.textContent = "Thinking...";
 
       try {
-        const response = await fetch("/ask", {
+fetch("/api/ask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ question: text })
