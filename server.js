@@ -1,5 +1,5 @@
 
-  const express = require("express");
+const express = require("express");
 const path = require("path");
 const Groq = require("groq-sdk");
 
@@ -16,6 +16,13 @@ const groq = new Groq({
 });
 
 app.use(express.json());
+
+// Show the email/login page first
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "auth.html"));
+});
+
+// Serve CSS, JavaScript, images, auth.html, etc.
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/api/health", (req, res) => {
@@ -59,8 +66,9 @@ app.post("/api/ask", async (req, res) => {
       .map((model) => model.id);
 
     const preferred = [
-  "openai/gpt-oss-20b",
-];
+      "openai/gpt-oss-20b",
+    ];
+
     const model =
       preferred.find((name) => available.includes(name)) ||
       available.find((name) => !name.includes("whisper"));
@@ -105,6 +113,7 @@ app.post("/api/ask", async (req, res) => {
   }
 });
 
+// Other pages fall back to the main AURA page
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
