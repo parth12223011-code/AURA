@@ -1,100 +1,114 @@
-const express = require("express");
+
+  const express = require("express");
 const path = require("path");
 const Groq = require("groq-sdk");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
-// Middleware
+if (!process.env.GROQ_API_KEY) {
+  console.error("GROQ_API_KEY is missing.");
+  process.exit(1);
+}
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// Groq client
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "AURA AI backend is online!",
+  });
 });
 
-// Health check
-("/api/models", async (req, res) => {
-  try {
-    const models = await groq.models.list();
-    res.json(models);
 app.get("/api/models", async (req, res) => {
   try {
     const models = await groq.models.list();
 
     res.json({
-      models: models.data.map(model => ({
-        id: model.id,
-        active: model.active
-      }))
+      models: models.data
+        .filter((model) => model.active !== false)
+        .map((model) => model.id),
     });
   } catch (error) {
-    console.error("MODEL LIST ERROR:", error);
+    console.error("MODEL ERROR:", error);
+
     res.status(500).json({
-      error: error.message
+      error: error.message,
     });
   }
 });
 
-// AI endpoint
 app.post("/api/ask", async (req, res) => {
   try {
-    const { question } = req.body;
+    const question = req.body.question;
 
     if (!question || !question.trim()) {
       return res.status(400).json({
-        error: "Please enter a question."
+        error: "Please enter a question.",
       });
     }
 
-    if (!process.env.GROQ_API_KEY) {
+    const models = await groq.models.list();
+
+    const available = models.data
+      .filter((model) => model.active !== false)
+      .map((model) => model.id);
+
+    const preferred = [
+  "openai/gpt-oss-20b",
+];
+    const model =
+      preferred.find((name) => available.includes(name)) ||
+      available.find((name) => !name.includes("whisper"));
+
+    if (!model) {
       return res.status(500).json({
-        error: "GROQ_API_KEY is not configured."
+        error: "No suitable Groq chat model is available.",
       });
     }
+
+    console.log("AURA using model:", model);
 
     const completion = await groq.chat.completions.create({
-     model: "llama-3.1-8b-instant",      messages: [
+      model,
+      messages: [
         {
           role: "system",
           content:
-            "You are AURA, an AI-powered Unified Revision Assistant. " +
-            "You are a helpful, friendly study assistant. " +
-            "Explain concepts clearly and simply for school students. " +
-            "Use examples when helpful and structure answers with headings or bullet points when appropriate."
+            "You are AURA, an AI-powered Unified Revision Assistant. Help students understand school subjects clearly and simply. Give accurate, concise, student-friendly explanations.",
         },
         {
           role: "user",
-          content: question
-        }
+          content: question.trim(),
+        },
       ],
       temperature: 0.7,
-      max_completion_tokens: 2048
+      max_tokens: 1000,
     });
 
     const answer = completion.choices?.[0]?.message?.content;
 
-    if (!answer) {
-      return res.status(500).json({
-        error: "Groq returned an empty response."
-      });
-    }
-
     res.json({
-      answer: answer
+      answer: answer || "AURA could not generate an answer.",
+      model,
     });
-
   } catch (error) {
     console.error("AURA AI error:", error);
 
     res.status(500).json({
-      error: "AURA could not get a response from Groq."
+      error: error.message || "AURA could not get a response.",
     });
   }
 });
 
-// Start server
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 app.listen(PORT, () => {
   console.log(`AURA AI is running on port ${PORT}`);
 });
