@@ -28,20 +28,20 @@ app.post("/ask", async (req, res) => {
       });
     }
 
-    const ollamaResponse = await fetch(
-      "http://127.0.0.1:11434/api/generate",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "llama3.2",
-          prompt: question,
-          stream: false,
-        }),
-      }
-    );
+const ollamaResponse = await fetch(
+  `${process.env.OLLAMA_URL}/api/generate`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "llama3.2",
+      prompt: question,
+      stream: false,
+    }),
+  }
+);
 
     if (!ollamaResponse.ok) {
       throw new Error(`Ollama returned ${ollamaResponse.status}`);

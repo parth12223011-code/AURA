@@ -720,6 +720,7 @@ checkAuth();
       </div>
     </main>
   </div>
+<script>
     // Cursor-driven 3D tilt for dashboard cards
     document.querySelectorAll(".panel, .stat, .subject").forEach((card) => {
       card.addEventListener("mousemove", (event) => {
@@ -737,6 +738,8 @@ checkAuth();
         card.style.transform = "";
       });
     });
+</script>
+
   <script>
     const form = document.getElementById("chatForm");
     const input = document.getElementById("question");
