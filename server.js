@@ -15,10 +15,26 @@ const groq = new Groq({
 });
 
 // Health check
-app.get("/api/health", (req, res) => {
-  res.json({
-    status: "AURA AI backend is online!"
-  });
+("/api/models", async (req, res) => {
+  try {
+    const models = await groq.models.list();
+    res.json(models);
+app.get("/api/models", async (req, res) => {
+  try {
+    const models = await groq.models.list();
+
+    res.json({
+      models: models.data.map(model => ({
+        id: model.id,
+        active: model.active
+      }))
+    });
+  } catch (error) {
+    console.error("MODEL LIST ERROR:", error);
+    res.status(500).json({
+      error: error.message
+    });
+  }
 });
 
 // AI endpoint
