@@ -1,66 +1,58 @@
-require("dotenv").config();
-
 const express = require("express");
 const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static(path.join(__dirname, "public"), {
-  index: false
-}));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "auth.html"));
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "AURA AI backend is online!"
+  });
 });
 
-app.get("/dashboard", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
-app.post("/ask", async (req, res) => {
+app.post("/api/ask", async (req, res) => {
   try {
-    const question = req.body.question?.trim();
+    const { question } = req.body;
 
-    if (!question) {
+    if (!question || !question.trim()) {
       return res.status(400).json({
-        error: "Please provide a question.",
+        error: "Please enter a question."
       });
     }
 
-const ollamaResponse = await fetch(
-  `${process.env.OLLAMA_URL}/api/generate`,
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "llama3.2",
-      prompt: question,
-      stream: false,
-    }),
-  }
-);
-
-    if (!ollamaResponse.ok) {
-      throw new Error(`Ollama returned ${ollamaResponse.status}`);
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({
+        error: "GEMINI_API_KEY is not configured."
+      });
     }
 
-    const data = await ollamaResponse.json();
+    const { GoogleGenAI } = await import("@google/genai");
+
+    const ai = new GoogleGenAI({
+      apiKey: process.env.GEMINI_API_KEY
+    });
+
+    const interaction = await ai.interactions.create({
+      model: "gemini-3.7-flash",
+      input: question
+    });
 
     res.json({
-      answer: data.response,
+      answer: interaction.output_text
     });
+
   } catch (error) {
     console.error("AURA AI error:", error);
 
     res.status(500).json({
-      error: "AURA could not get a response from Ollama.",
+      error: "AURA could not get a response from Gemini."
     });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`AURA AI is running at http://localhost:${PORT}`);
+  console.log(`AURA AI is running on port ${PORT}`);
 });
