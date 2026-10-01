@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+.next/
+dist/
+build/
+__pycache__/
+*.py[cod]
+*.log
+*.key
+*.pem
+assets/
