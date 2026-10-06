@@ -2,7 +2,7 @@ import { createServer } from "node:http";
 import { connect as connectHttp2 } from "node:http2";
 
 const port = Number(process.env.PORT || 8787);
-const host = process.env.HOST || "127.0.0.1";
+const host = process.env.HOST || "0.0.0.0";
 const maxBodyBytes = 16_000;
 const allowedClasses = new Set(["Class 6", "Class 7", "Class 8", "Class 9", "Class 10", "Class 11", "Class 12"]);
 const allowedLevels = new Set(["Build my basics", "Help me improve", "Challenge me"]);
